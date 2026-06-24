@@ -11,22 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('appointments', function (Blueprint $table) {
-
-            $table->id();
-
-            $table->string('patient_name');
-
-            $table->string('doctor_name');
-
-            $table->date('appointment_date');
-
-            $table->time('appointment_time');
-
-            $table->string('status')
-                  ->default('Pending');
-
-            $table->timestamps();
+       Schema::create('appointments', function (Blueprint $table) {
+        $table->id();
+        $table->integer('patient_id'); 
+        $table->integer('doctor_id');  
+        $table->date('appointment_date');
+        $table->string('status')->default('pending'); 
+        $table->timestamps();
         });
     }
 
