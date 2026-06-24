@@ -2,107 +2,67 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Appointment;
 use Illuminate\Http\Request;
+use App\Models\Appointment;
+use App\Models\User;
+use App\Models\Department;
 
 class AppointmentController extends Controller
 {
     /**
-     * Display Appointment Page
+     * Show appointment booking form.
      */
-    public function index()
+    public function book()
     {
-        $appointments = Appointment::all();
-
-        $totalAppointments = Appointment::count();
-
-        $pendingAppointments = Appointment::where(
-            'status',
-            'Pending'
-        )->count();
-
-        $approvedAppointments = Appointment::where(
-            'status',
-            'Approved'
-        )->count();
-
-        return view(
-            'appointments',
-            compact(
-                'appointments',
-                'totalAppointments',
-                'pendingAppointments',
-                'approvedAppointments'
-            )
-        );
+        $doctors     = User::where('role', 'doctor')->with('department')->get();
+        $departments = Department::all();
+        return view('appointment.book', compact('doctors', 'departments'));
     }
 
     /**
-     * Store Appointment
+     * Store a new appointment.
      */
     public function store(Request $request)
     {
-        Appointment::create([
-            'patient_name' => $request->patient_name,
-            'doctor_name' => $request->doctor_name,
-            'appointment_date' => $request->appointment_date,
-            'appointment_time' => $request->appointment_time,
-            'status' => 'Pending'
+        $validated = $request->validate([
+            'patient_id'       => 'required|exists:users,id',
+            'doctor_id'        => 'required|exists:users,id',
+            'appointment_date' => 'required|date|after_or_equal:today',
+            'appointment_time' => 'nullable|string',
+            'notes'            => 'nullable|string|max:500',
         ]);
 
-        return back();
+        $validated['status'] = 'pending';
+
+        Appointment::create($validated);
+
+        return redirect()->route('patients.dashboard')
+            ->with('success', '✅ Appointment booked successfully! Awaiting approval.');
     }
 
     /**
-     * Approve Appointment
+     * List all appointments (admin/doctor view).
      */
-    public function approve($id)
+    public function index()
     {
-        $appointment = Appointment::findOrFail($id);
+        $appointments = Appointment::with(['patient', 'doctor'])
+            ->orderByDesc('appointment_date')
+            ->paginate(15);
 
-        $appointment->status = 'Approved';
-
-        $appointment->save();
-
-        return back();
+        return view('appointment.index', compact('appointments'));
     }
 
     /**
-     * Cancel Appointment
+     * Update appointment status (approve/cancel).
      */
-    public function cancel($id)
+    public function updateStatus(Request $request, Appointment $appointment)
     {
-        $appointment = Appointment::findOrFail($id);
+        $request->validate([
+            'status' => 'required|in:pending,approved,cancelled',
+        ]);
 
-        $appointment->status = 'Cancelled';
+        $appointment->update(['status' => $request->status]);
 
-        $appointment->save();
-
-        return back();
-    }
-
-    public function create()
-    {
-        //
-    }
-
-    public function show(Appointment $appointment)
-    {
-        //
-    }
-
-    public function edit(Appointment $appointment)
-    {
-        //
-    }
-
-    public function update(Request $request, Appointment $appointment)
-    {
-        //
-    }
-
-    public function destroy(Appointment $appointment)
-    {
-        //
+        return back()->with('success', '✅ Appointment status updated.');
     }
 }
