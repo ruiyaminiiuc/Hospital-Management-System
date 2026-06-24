@@ -10,23 +10,20 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void {
-    Schema::create('appointments', function ($table) {
+    Schema::create('schedules', function ($table) {
         $table->id();
-        $table->string('patient_name');
-        $table->string('doctor_name');
-        $table->string('session_title');
-        $table->date('appointment_date');
-        $table->time('appointment_time');
-        $table->string('status')->default('Pending');
+        $table->integer('doctor_id'); 
+        $table->string('title');
+        $table->date('date');
+        $table->time('time');
         $table->timestamps();
     });
 }
-
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('appointments');
+        Schema::dropIfExists('schedules');
     }
 };

@@ -49,3 +49,12 @@ Route::post(
     '/admin/add-department',
     [AdminController::class, 'storeDepartment']
 )->name('admin.dept.store');
+
+use App\Http\Controllers\DoctorController;
+
+Route::prefix('doctor')->group(function () {
+    Route::get('/dashboard', [DoctorController::class, 'dashboard'])->name('doctor.dashboard');
+    Route::get('/appointments', [DoctorController::class, 'appointments'])->name('doctor.appointments');
+    Route::get('/schedule', [DoctorController::class, 'schedule'])->name('doctor.schedule');
+    Route::get('/profile', [DoctorController::class, 'profile'])->name('doctor.profile');
+});
