@@ -8,9 +8,9 @@ class Department extends Model
 {
     protected $fillable = ['name', 'description'];
 
-    // Relationship: A department has many doctors (Users)
+    /** Doctors belonging to this department */
     public function doctors()
     {
-        return $this->hasMany(User::class, 'department_id');
+        return $this->hasMany(User::class, 'department_id')->where('role', 'doctor');
     }
 }

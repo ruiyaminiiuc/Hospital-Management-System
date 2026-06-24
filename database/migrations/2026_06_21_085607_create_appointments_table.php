@@ -13,11 +13,16 @@ return new class extends Migration
     {
        Schema::create('appointments', function (Blueprint $table) {
         $table->id();
-        $table->integer('patient_id'); 
-        $table->integer('doctor_id');  
+        $table->unsignedBigInteger('patient_id');
+        $table->unsignedBigInteger('doctor_id');
         $table->date('appointment_date');
-        $table->string('status')->default('pending'); 
+        $table->string('appointment_time')->nullable();
+        $table->text('notes')->nullable();
+        $table->string('status')->default('pending');
         $table->timestamps();
+
+        $table->foreign('patient_id')->references('id')->on('users')->onDelete('cascade');
+        $table->foreign('doctor_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

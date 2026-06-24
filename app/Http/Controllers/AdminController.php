@@ -30,4 +30,31 @@ class AdminController extends Controller
         $dept->save();
         return back()->with('success', 'Department Created!');
     }
+
+    public function showRegister() {
+        $departments = Department::all();
+        return view('admin.register', compact('departments'));
+    }
+
+    public function storeUser(Request $request) {
+        $validated = $request->validate([
+            'name'                  => 'required|string|max:255',
+            'email'                 => 'required|email|unique:users,email',
+            'phone'                 => 'nullable|string|max:20',
+            'role'                  => 'required|in:admin,doctor,patient',
+            'department_id'         => 'required_if:role,doctor|nullable|exists:departments,id',
+            'password'              => 'required|string|min:6|confirmed',
+        ]);
+
+        $user = new User();
+        $user->name = $validated['name'];
+        $user->email = $validated['email'];
+        $user->phone = $validated['phone'] ?? null;
+        $user->role = $validated['role'];
+        $user->department_id = ($validated['role'] === 'doctor') ? $validated['department_id'] : null;
+        $user->password = bcrypt($validated['password']);
+        $user->save();
+
+        return redirect()->route('admin.register')->with('success', '🎉 User registered successfully as ' . ucfirst($validated['role']) . '!');
+    }
 }

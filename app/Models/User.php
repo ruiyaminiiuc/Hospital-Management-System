@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -15,19 +14,18 @@ class User extends Authenticatable
 
     /**
      * The attributes that are mass assignable.
-     *
-     * @var list<string>
      */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'role',
+        'phone',
+        'department_id',
     ];
 
     /**
      * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
      */
     protected $hidden = [
         'password',
@@ -36,14 +34,38 @@ class User extends Authenticatable
 
     /**
      * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
      */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'password'          => 'hashed',
         ];
     }
+
+    // ─── Relationships ─────────────────────────────────────────────
+
+    /** Appointments where this user is a patient */
+    public function patientAppointments()
+    {
+        return $this->hasMany(Appointment::class, 'patient_id');
+    }
+
+    /** Appointments where this user is a doctor */
+    public function doctorAppointments()
+    {
+        return $this->hasMany(Appointment::class, 'doctor_id');
+    }
+
+    /** Department the user (doctor) belongs to */
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    // ─── Helpers ───────────────────────────────────────────────────
+
+    public function isAdmin():    bool { return $this->role === 'admin'; }
+    public function isDoctor():   bool { return $this->role === 'doctor'; }
+    public function isPatient():  bool { return $this->role === 'patient'; }
 }
